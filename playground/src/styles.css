@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root { color: #191a17; background: #f2f0e9; font-family: Manrope, sans-serif; font-synthesis: none; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+button, select, textarea { font: inherit; }
+button, select { cursor: pointer; }
+main { min-height: 100vh; max-width: 1440px; margin: auto; padding: 32px 5vw 20px; display: flex; flex-direction: column; }
+.hero { min-height: 300px; display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: start; position: relative; }
+.brand { display: flex; align-items: center; gap: 11px; font-weight: 800; font-size: 19px; }
+.mark { width: 34px; height: 34px; border-radius: 50%; background: #191a17; color: #f2f0e9; display: grid; place-items: center; font-family: 'DM Mono'; }
+.hero-copy { padding-top: 37px; }
+.eyebrow, .path { font: 500 11px 'DM Mono'; letter-spacing: .14em; color: #76776f; }
+h1 { font-size: clamp(45px, 6.3vw, 92px); letter-spacing: -.065em; line-height: .92; margin: 22px 0; font-weight: 600; }
+h1 em { font-family: Georgia, serif; font-weight: 400; color: #ff593f; }
+.intro { color: #686960; line-height: 1.7; max-width: 520px; }
+.status { justify-self: end; font: 500 10px 'DM Mono'; letter-spacing: .1em; display: flex; gap: 8px; align-items: center; }
+.status i { width: 7px; height: 7px; background: #6ca64b; border-radius: 50%; box-shadow: 0 0 0 4px #dce6d4; }
+.workspace { border-top: 1px solid #cfcdc4; border-bottom: 1px solid #cfcdc4; display: grid; grid-template-columns: 190px 1fr; min-height: 475px; }
+.categories { padding: 28px 24px 28px 0; border-right: 1px solid #cfcdc4; display: flex; flex-direction: column; gap: 3px; }
+.categories button { border: 0; background: transparent; padding: 10px 12px; display: flex; justify-content: space-between; color: #7a7b73; border-radius: 7px; text-align: left; }
+.categories button:hover { background: #e9e6dd; color: #191a17; }
+.categories button.active { color: #191a17; font-weight: 700; background: #e4e1d7; }
+.categories small { font: 400 10px 'DM Mono'; opacity: .65; }
+.runner { padding: 28px 0 28px 34px; min-width: 0; }
+.runner-head { display: flex; justify-content: space-between; align-items: end; margin-bottom: 24px; }
+.runner-head select { display: block; border: 0; background: transparent; font-size: 31px; font-weight: 700; letter-spacing: -.04em; padding: 3px 32px 3px 0; color: #191a17; }
+.runner-head p { color: #76776f; font-size: 13px; margin: 5px 0 0; }
+.run { border: 0; background: #ff593f; color: white; padding: 13px 17px; border-radius: 7px; font-weight: 700; box-shadow: 0 4px 14px #ff593f33; }
+.run:hover { background: #e94d35; transform: translateY(-1px); }
+.run span { opacity: .65; font: 10px 'DM Mono'; margin-left: 10px; }
+.panels { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; height: 330px; }
+.panel { border: 1px solid #c9c7be; border-radius: 9px; background: #eae8e0; display: flex; flex-direction: column; overflow: hidden; }
+.panel > span { height: 42px; border-bottom: 1px solid #cfcdc4; padding: 0 14px; display: flex; align-items: center; justify-content: space-between; }
+.panel b, .panel small { font: 500 10px 'DM Mono'; letter-spacing: .1em; }
+.panel small { color: #85867d; letter-spacing: 0; }
+textarea, pre { margin: 0; border: 0; resize: none; outline: 0; flex: 1; padding: 18px; font: 13px/1.7 'DM Mono', monospace; color: #e8e9e4; background: #252622; overflow: auto; }
+pre { color: #b9e179; white-space: pre-wrap; }
+.has-error pre { color: #ff8b79; }
+footer { display: flex; justify-content: space-between; padding-top: 18px; color: #8b8b83; font-size: 11px; }
+footer a { color: inherit; text-decoration: none; }
+
+@media (max-width: 800px) {
+  main { padding: 22px 20px 16px; }
+  .hero { min-height: 270px; grid-template-columns: 1fr auto; }
+  .hero-copy { grid-column: 1 / -1; grid-row: 2; padding-top: 25px; }
+  h1 { font-size: 48px; }
+  .workspace { grid-template-columns: 1fr; }
+  .categories { border-right: 0; border-bottom: 1px solid #cfcdc4; flex-direction: row; overflow-x: auto; padding: 14px 0; }
+  .categories button { flex: 0 0 auto; gap: 12px; }
+  .runner { padding: 24px 0; }
+  .panels { grid-template-columns: 1fr; height: auto; }
+  .panel { min-height: 250px; }
+}

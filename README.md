@@ -79,6 +79,17 @@ npm test
 npm run typecheck
 ```
 
+## Playground
+
+브라우저에서 유틸 함수의 JSON 인수를 편집하고 결과를 바로 확인할 수 있습니다.
+
+```bash
+npm run playground
+```
+
+프로덕션 빌드는 `npm run playground:build`로 생성합니다. `main` 브랜치에 push하면
+테스트와 타입 검사를 거쳐 GitHub Pages에 자동으로 배포됩니다.
+
 ## Next.js note
 
 `dogu/browser`, `dogu/storage`는 서버에서도 import해도 안전합니다. 실제 DOM/Storage 접근은 `isBrowser()` 체크 후 동작합니다.
