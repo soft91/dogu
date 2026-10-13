@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { categories, functions } from "./functions";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { categories, formatCall, functions } from "./functions";
 
 const stringify = (value: unknown) => {
   if (value === undefined) return "undefined";
@@ -8,6 +8,7 @@ const stringify = (value: unknown) => {
 };
 
 export function App() {
+  const [page, setPage] = useState<"playground" | "getting-started">("playground");
   const [category, setCategory] = useState("String");
   const available = useMemo(
     () => functions.filter((item) => item.category === category),
@@ -18,6 +19,9 @@ export function App() {
   const [input, setInput] = useState(() => JSON.stringify(selected.example, null, 2));
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [isFunctionMenuOpen, setIsFunctionMenuOpen] = useState(false);
+  const functionMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setFunctionName(available[0]!.name);
@@ -28,6 +32,14 @@ export function App() {
     setResult("");
     setError("");
   }, [selected]);
+
+  useEffect(() => {
+    const closeWhenClickedOutside = (event: MouseEvent) => {
+      if (!functionMenuRef.current?.contains(event.target as Node)) setIsFunctionMenuOpen(false);
+    };
+    document.addEventListener("mousedown", closeWhenClickedOutside);
+    return () => document.removeEventListener("mousedown", closeWhenClickedOutside);
+  }, []);
 
   const run = async () => {
     try {
@@ -42,50 +54,95 @@ export function App() {
     }
   };
 
+  const copyInstallCommand = async () => {
+    await navigator.clipboard.writeText("pnpm add dogu");
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
+  };
+
   return (
     <main>
       <header className="hero">
-        <div className="brand"><span className="mark">D</span><span>Dogu</span></div>
+        <div className="brand"><span className="mark">⌁</span><span>dogu</span><span className="badge">playground</span></div>
         <div className="hero-copy">
-          <p className="eyebrow">TYPESCRIPT UTILITY LAB</p>
-          <h1>작은 함수도<br /><em>직접 확인하세요.</em></h1>
-          <p className="intro">Dogu 유틸리티에 값을 넣고 브라우저에서 바로 결과를 확인하는 공간입니다.</p>
+          <h1>함수를 빠르게 확인하세요</h1>
+          <p className="intro">인수를 입력하고 실행 결과를 바로 확인할 수 있습니다.</p>
         </div>
-        <div className="status"><i /> LIVE PLAYGROUND</div>
+        <div className="status">v0.1.0</div>
       </header>
 
       <section className="workspace">
         <nav className="categories" aria-label="유틸리티 카테고리">
+          <button className={`getting-menu ${page === "getting-started" ? "active" : ""}`} onClick={() => setPage("getting-started")}>
+            <span>시작하기</span><small>↗</small>
+          </button>
           {categories.map((item) => (
-            <button className={item === category ? "active" : ""} key={item} onClick={() => setCategory(item)}>
-              <span>{item}</span><small>{functions.filter((fn) => fn.category === item).length}</small>
+            <button className={page === "playground" && item === category ? "active" : ""} key={item} onClick={() => { setCategory(item); setPage("playground"); }}>
+              <span>{item}</span><small>{String(functions.filter((fn) => fn.category === item).length).padStart(2, "0")}</small>
             </button>
           ))}
         </nav>
 
-        <div className="runner">
+        {page === "getting-started" ? (
+          <section className="getting-page">
+            <span className="path">DOGU / GETTING STARTED</span>
+            <h2>설치하고 사용하기</h2>
+            <p>Dogu는 필요한 유틸리티만 가져와 사용할 수 있는 TypeScript 유틸리티 모음입니다.</p>
+            <div className="guide-step"><span>01</span><div><b>패키지 설치</b><code>pnpm add dogu</code><button type="button" onClick={() => void copyInstallCommand()}>{copied ? "복사됨" : "복사"}</button></div></div>
+            <div className="guide-step"><span>02</span><div><b>필요한 함수 가져오기</b><code>import {`{ unique }`} from "dogu/array"</code></div></div>
+            <div className="guide-step"><span>03</span><div><b>함수 사용</b><code>const values = unique([1, 1, 2])</code></div></div>
+          </section>
+        ) : <div className="runner">
           <div className="runner-head">
             <div>
-              <span className="path">dogu/{category.toLowerCase()}</span>
-              <select value={selected.name} onChange={(event) => setFunctionName(event.target.value)}>
-                {available.map((item) => <option key={item.name}>{item.name}</option>)}
-              </select>
+              <span className="path">PACKAGE / DOGU / {category.toUpperCase()}</span>
+              <div className="function-picker" ref={functionMenuRef}>
+                <button
+                  className="function-trigger"
+                  type="button"
+                  aria-haspopup="listbox"
+                  aria-expanded={isFunctionMenuOpen}
+                  onClick={() => setIsFunctionMenuOpen((open) => !open)}
+                >
+                  <span>{selected.name}</span><i aria-hidden="true" />
+                </button>
+                {isFunctionMenuOpen && (
+                  <div className="function-menu" role="listbox" aria-label={`${category} 함수 선택`}>
+                    {available.map((item) => (
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={item.name === selected.name}
+                        className={item.name === selected.name ? "selected" : ""}
+                        key={item.name}
+                        onClick={() => { setFunctionName(item.name); setIsFunctionMenuOpen(false); }}
+                      >
+                        <span className="check">✓</span>{item.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <p>{selected.description}</p>
+              <div className="function-docs" aria-label={`${selected.name} 사용 방법`}>
+                <div><span>IMPORT</span><code>import {`{ ${selected.name} }`} from "dogu/{category.toLowerCase()}"</code></div>
+                <div><span>USAGE</span><code>const result = {formatCall(selected.name, selected.example)}</code></div>
+              </div>
             </div>
-            <button className="run" onClick={run}>실행 <span>⌘ ↵</span></button>
+            <button className="run" onClick={run}><span className="play">▶</span> 실행 <kbd>⌘ ↵</kbd></button>
           </div>
 
           <div className="panels">
             <label className="panel">
-              <span><b>INPUT</b><small>JSON 인수 배열</small></span>
+              <span><b>INPUT</b><small>JSON argument array</small></span>
               <textarea value={input} onChange={(event) => setInput(event.target.value)} spellCheck={false} />
             </label>
             <div className={`panel output ${error ? "has-error" : ""}`}>
-              <span><b>{error ? "ERROR" : "OUTPUT"}</b><small>{result ? "실행 완료" : "결과 대기 중"}</small></span>
-              <pre>{error || result || "실행 버튼을 눌러 결과를 확인하세요."}</pre>
+              <span><b>{error ? "ERROR" : "OUTPUT"}</b><small>{result ? "complete" : "waiting for execution"}</small></span>
+              <pre>{error || result || "// 실행 결과가 여기에 표시됩니다."}</pre>
             </div>
           </div>
-        </div>
+        </div>}
       </section>
 
       <footer><span>dogu <b>v0.1.0</b></span><a href="https://github.com/soft91/Dogu">GitHub ↗</a></footer>

@@ -44,6 +44,9 @@ export type PlaygroundFunction = {
   run: (...args: any[]) => unknown;
 };
 
+export const formatCall = (name: string, args: unknown[]) =>
+  `${name}(${args.map((arg) => JSON.stringify(arg)).join(", ")})`;
+
 const entry = (
   category: string,
   name: string,
