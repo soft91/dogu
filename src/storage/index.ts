@@ -1,9 +1,10 @@
 import { isBrowser } from "../browser";
 
 type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
+type StorageKind = "local" | "session";
 
 /** 브라우저 Storage API를 안전하게 가져옵니다. (SSR/접근 불가 시 `null`) */
-function getStorage(kind: "local" | "session"): StorageLike | null {
+function getStorage(kind: StorageKind): StorageLike | null {
   if (!isBrowser()) return null;
 
   try {
@@ -20,7 +21,7 @@ function getStorage(kind: "local" | "session"): StorageLike | null {
 export function createStorage<T>(
   key: string,
   options: {
-    kind?: "local" | "session";
+    kind?: StorageKind;
     serialize?: (value: T) => string;
     deserialize?: (raw: string) => T;
   } = {},
@@ -60,39 +61,30 @@ export function createStorage<T>(
     },
     /** 저장된 값을 삭제합니다. */
     remove(): void {
-      getStorage(kind)?.removeItem(key);
+      try {
+        getStorage(kind)?.removeItem(key);
+      } catch {
+        // Storage 접근 예외는 안전한 헬퍼의 경계 밖으로 전파하지 않습니다.
+      }
+    },
+  };
+}
+
+function createStorageNamespace(kind: StorageKind) {
+  return {
+    get<T>(key: string, defaultValue?: T): T | undefined {
+      return createStorage<T>(key, { kind }).get(defaultValue);
+    },
+    set<T>(key: string, value: T): boolean {
+      return createStorage<T>(key, { kind }).set(value);
+    },
+    remove(key: string): void {
+      createStorage(key, { kind }).remove();
     },
   };
 }
 
 /** localStorage용 간편 get/set/remove 헬퍼 */
-export const local = {
-  /** localStorage에서 JSON 값을 읽습니다. */
-  get<T>(key: string, defaultValue?: T): T | undefined {
-    return createStorage<T>(key, { kind: "local" }).get(defaultValue);
-  },
-  /** localStorage에 JSON 값을 저장합니다. */
-  set<T>(key: string, value: T): boolean {
-    return createStorage<T>(key, { kind: "local" }).set(value);
-  },
-  /** localStorage에서 키를 삭제합니다. */
-  remove(key: string): void {
-    createStorage(key, { kind: "local" }).remove();
-  },
-};
-
+export const local = createStorageNamespace("local");
 /** sessionStorage용 간편 get/set/remove 헬퍼 */
-export const session = {
-  /** sessionStorage에서 JSON 값을 읽습니다. */
-  get<T>(key: string, defaultValue?: T): T | undefined {
-    return createStorage<T>(key, { kind: "session" }).get(defaultValue);
-  },
-  /** sessionStorage에 JSON 값을 저장합니다. */
-  set<T>(key: string, value: T): boolean {
-    return createStorage<T>(key, { kind: "session" }).set(value);
-  },
-  /** sessionStorage에서 키를 삭제합니다. */
-  remove(key: string): void {
-    createStorage(key, { kind: "session" }).remove();
-  },
-};
+export const session = createStorageNamespace("session");

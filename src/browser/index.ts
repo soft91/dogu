@@ -28,10 +28,12 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     textarea.style.position = "fixed";
     textarea.style.left = "-9999px";
     document.body.appendChild(textarea);
-    textarea.select();
-    const ok = document.execCommand("copy");
-    document.body.removeChild(textarea);
-    return ok;
+    try {
+      textarea.select();
+      return document.execCommand("copy");
+    } finally {
+      textarea.remove();
+    }
   } catch {
     return false;
   }

@@ -2,7 +2,8 @@ type DateInput = Date | number | string;
 
 /** DateInput을 유효한 Date로 변환합니다. 실패 시 에러를 던집니다. */
 function toDate(value: DateInput): Date {
-  const date = value instanceof Date ? value : new Date(value);
+  // Date 입력도 복제해 모든 헬퍼가 호출자 값을 변경하지 않게 합니다.
+  const date = value instanceof Date ? new Date(value.getTime()) : new Date(value);
   if (Number.isNaN(date.getTime())) {
     throw new Error(`Invalid date: ${String(value)}`);
   }

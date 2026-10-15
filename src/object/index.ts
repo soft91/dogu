@@ -1,4 +1,5 @@
 import { isPlainObject } from "../type";
+import { isObjectLike, toPath, type PathKey } from "./path";
 
 /** 객체에서 지정한 키만 골라 새 객체를 만듭니다. */
 export function pick<T extends object, K extends keyof T>(obj: T, keys: readonly K[]): Pick<T, K> {
@@ -73,39 +74,31 @@ export function deepMerge<T extends Record<string, unknown>>(
 /** 점/대괄호 경로로 중첩 객체 값을 안전하게 조회합니다. */
 export function get<T = unknown>(
   obj: unknown,
-  path: string | Array<string | number>,
+  path: string | readonly PathKey[],
   defaultValue?: T,
 ): T | undefined {
-  const keys = Array.isArray(path)
-    ? path
-    : path
-        .replace(/\[(\d+)\]/g, ".$1")
-        .split(".")
-        .filter(Boolean);
-
   let current: unknown = obj;
-  for (const key of keys) {
-    if (current == null || (typeof current !== "object" && typeof current !== "function")) {
+  for (const key of toPath(path)) {
+    if (!isObjectLike(current)) {
       return defaultValue;
     }
-    current = (current as Record<string | number, unknown>)[key as string | number];
+    current = current[key];
   }
 
   return (current === undefined ? defaultValue : current) as T | undefined;
 }
 
 /** 점/대괄호 경로로 중첩 객체에 값을 설정합니다. 중간 경로가 없으면 생성합니다. */
-export function set<T extends object>(obj: T, path: string | Array<string | number>, value: unknown): T {
-  const keys = Array.isArray(path)
-    ? path
-    : path
-        .replace(/\[(\d+)\]/g, ".$1")
-        .split(".")
-        .filter(Boolean);
+export function set<T extends object>(
+  obj: T,
+  path: string | readonly PathKey[],
+  value: unknown,
+): T {
+  const keys = toPath(path);
 
   if (keys.length === 0) return obj;
 
-  let current: Record<string | number, unknown> = obj as Record<string | number, unknown>;
+  let current: Record<PathKey, unknown> = obj as Record<PathKey, unknown>;
 
   for (let i = 0; i < keys.length - 1; i += 1) {
     const key = keys[i]!;
@@ -116,7 +109,7 @@ export function set<T extends object>(obj: T, path: string | Array<string | numb
       current[key] = nextIsIndex ? [] : {};
     }
 
-    current = current[key] as Record<string | number, unknown>;
+    current = current[key] as Record<PathKey, unknown>;
   }
 
   current[keys[keys.length - 1]!] = value;
