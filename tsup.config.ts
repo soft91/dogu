@@ -14,6 +14,7 @@ const entries = [
   "src/browser/index.ts",
   "src/storage/index.ts",
   "src/css/index.ts",
+  "src/tree/index.ts",
 ];
 
 export default defineConfig({

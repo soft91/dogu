@@ -73,6 +73,11 @@
       "import": "./dist/css/index.js",
       "require": "./dist/css/index.cjs"
     },
+    "./tree": {
+      "types": "./dist/tree/index.d.ts",
+      "import": "./dist/tree/index.js",
+      "require": "./dist/tree/index.cjs"
+    },
     "./package.json": "./package.json"
   },
   "files": [

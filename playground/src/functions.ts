@@ -12,6 +12,8 @@ import {
   formatCurrency,
   formatDate,
   formatNumber,
+  findBfs,
+  findDfs,
   get,
   inRange,
   intersection,
@@ -42,6 +44,8 @@ export type PlaygroundFunction = {
   description: string;
   example: unknown[];
   run: (...args: any[]) => unknown;
+  usage?: string;
+  parameters?: Array<{ name: string; type: string; description: string }>;
 };
 
 export const formatCall = (name: string, args: unknown[]) =>
@@ -53,7 +57,33 @@ const entry = (
   description: string,
   example: unknown[],
   run: (...args: any[]) => unknown,
-): PlaygroundFunction => ({ category, name, description, example, run });
+  usage?: string,
+  parameters?: PlaygroundFunction["parameters"],
+): PlaygroundFunction => ({
+  category,
+  name,
+  description,
+  example,
+  run,
+  ...(usage === undefined ? {} : { usage }),
+  ...(parameters === undefined ? {} : { parameters }),
+});
+
+type ExampleTreeNode = { id: string; children?: ExampleTreeNode[] };
+
+const findInExampleTree = (
+  search: typeof findBfs | typeof findDfs,
+  root: ExampleTreeNode,
+  id: string,
+) => search(root, (node) => node.children, (node) => node.id === id);
+
+const exampleTree = {
+  id: "root",
+  children: [
+    { id: "left", children: [{ id: "deep-match" }] },
+    { id: "right", children: [{ id: "target" }] },
+  ],
+};
 
 export const functions: PlaygroundFunction[] = [
   entry("String", "capitalize", "첫 글자를 대문자로 변환", ["dogu library"], capitalize),
@@ -97,6 +127,32 @@ export const functions: PlaygroundFunction[] = [
   entry("Type", "isNil", "null 또는 undefined인지 확인", [null], isNil),
   entry("Type", "isEmpty", "값이 비어 있는지 확인", [{}], isEmpty),
   entry("CSS", "cn", "조건부 클래스 이름을 결합", ["button", { active: true, disabled: false }, ["large"]], cn),
+  entry(
+    "Tree",
+    "findBfs",
+    "너비 우선으로 가장 가까운 일치 노드 찾기",
+    [exampleTree, "target"],
+    (root: ExampleTreeNode, id: string) => findInExampleTree(findBfs, root, id),
+    'const result = findBfs(root, (node) => node.children, (node) => node.id === "target")',
+    [
+      { name: "root", type: "T", description: "탐색을 시작할 루트 노드입니다." },
+      { name: "getChildren", type: "(node: T) => readonly T[] | undefined", description: "현재 노드에서 다음에 탐색할 자식 목록을 반환합니다." },
+      { name: "predicate", type: "(node: T) => boolean", description: "찾으려는 노드이면 true를 반환합니다." },
+    ],
+  ),
+  entry(
+    "Tree",
+    "findDfs",
+    "깊이 우선으로 첫 번째 일치 노드 찾기",
+    [exampleTree, "target"],
+    (root: ExampleTreeNode, id: string) => findInExampleTree(findDfs, root, id),
+    'const result = findDfs(root, (node) => node.children, (node) => node.id === "target")',
+    [
+      { name: "root", type: "T", description: "탐색을 시작할 루트 노드입니다." },
+      { name: "getChildren", type: "(node: T) => readonly T[] | undefined", description: "현재 노드에서 다음에 탐색할 자식 목록을 반환합니다." },
+      { name: "predicate", type: "(node: T) => boolean", description: "찾으려는 노드이면 true를 반환합니다." },
+    ],
+  ),
 ];
 
 export const categories = [...new Set(functions.map(({ category }) => category))];

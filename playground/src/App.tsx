@@ -126,7 +126,8 @@ export function App() {
               <p>{selected.description}</p>
               <div className="function-docs" aria-label={`${selected.name} 사용 방법`}>
                 <div><span>IMPORT</span><code>import {`{ ${selected.name} }`} from "dogu/{category.toLowerCase()}"</code></div>
-                <div><span>USAGE</span><code>const result = {formatCall(selected.name, selected.example)}</code></div>
+                <div><span>USAGE</span><code>{selected.usage ?? `const result = ${formatCall(selected.name, selected.example)}`}</code></div>
+                {selected.parameters && <div className="parameter-docs"><span>PARAMS</span><dl>{selected.parameters.map((parameter) => <div key={parameter.name}><dt><code>{parameter.name}</code><em>{parameter.type}</em></dt><dd>{parameter.description}</dd></div>)}</dl></div>}
               </div>
             </div>
             <button className="run" onClick={run}><span className="play">▶</span> 실행 <kbd>⌘ ↵</kbd></button>
