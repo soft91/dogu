@@ -4,6 +4,19 @@ export type QueryValue = string | number | boolean | null | undefined;
 /** 쿼리 파라미터 객체 타입 (배열 값 허용) */
 export type QueryInput = Record<string, QueryValue | QueryValue[]>;
 
+/** URL 쿼리 파라미터의 단일 항목 타입 */
+export type QueryEntry = { key: string; value: string };
+
+function getQueryString(input: string): string {
+  const hashIndex = input.indexOf("#");
+  const withoutHash = hashIndex >= 0 ? input.slice(0, hashIndex) : input;
+  const queryIndex = withoutHash.indexOf("?");
+
+  if (queryIndex >= 0) return withoutHash.slice(queryIndex + 1);
+  if (withoutHash.includes("://")) return "";
+  return withoutHash.startsWith("?") ? withoutHash.slice(1) : withoutHash;
+}
+
 /** 객체를 URL 쿼리 문자열로 직렬화합니다. (`null`/`undefined`는 제외) */
 export function stringifyQuery(query: QueryInput): string {
   const params = new URLSearchParams();
@@ -25,10 +38,17 @@ export function stringifyQuery(query: QueryInput): string {
   return params.toString();
 }
 
-/** 쿼리 문자열을 객체로 파싱합니다. 동일 키는 배열로 묶습니다. */
-export function parseQuery(search: string): Record<string, string | string[]> {
-  const input = search.startsWith("?") ? search.slice(1) : search;
-  const params = new URLSearchParams(input);
+/** URL 또는 쿼리 문자열에서 쿼리 항목을 `{ key, value }` 객체로 반환합니다. */
+export function parseQueryEntries(url: string): QueryEntry[] {
+  return Array.from(new URLSearchParams(getQueryString(url)).entries()).map(([key, value]) => ({
+    key,
+    value,
+  }));
+}
+
+/** URL 또는 쿼리 문자열을 객체로 파싱합니다. 동일 키는 배열로 묶습니다. */
+export function parseQuery(url: string): Record<string, string | string[]> {
+  const params = new URLSearchParams(getQueryString(url));
   const result: Record<string, string | string[]> = {};
 
   for (const key of new Set(params.keys())) {

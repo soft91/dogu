@@ -65,7 +65,7 @@ import { cn } from "dogu/css";
 | `dogu/async` | `sleep`, `retry`, `timeout`, `pLimit` ... |
 | `dogu/function` | `debounce`, `throttle`, `once`, `memoize` ... |
 | `dogu/type` | `isNil`, `isEmpty`, `isPlainObject`, `assertNever` ... |
-| `dogu/url` | `stringifyQuery`, `parseQuery`, `joinUrl`, `withQuery` |
+| `dogu/url` | `stringifyQuery`, `parseQuery`, `parseQueryEntries`, `joinUrl`, `withQuery` |
 | `dogu/browser` | `isBrowser`, `copyToClipboard`, cookie helpers |
 | `dogu/storage` | SSR-safe `local` / `session` / `createStorage` |
 | `dogu/css` | `cn` |
