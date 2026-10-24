@@ -21,7 +21,16 @@ export function App() {
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [isFunctionMenuOpen, setIsFunctionMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const functionMenuRef = useRef<HTMLDivElement>(null);
+
+  const searchResults = useMemo(() => {
+    const query = searchQuery.trim().toLocaleLowerCase();
+    if (!query) return available;
+    return functions.filter((item) =>
+      `${item.name} ${item.description}`.toLocaleLowerCase().includes(query),
+    );
+  }, [available, searchQuery]);
 
   useEffect(() => {
     setFunctionName(available[0]!.name);
@@ -60,15 +69,39 @@ export function App() {
     window.setTimeout(() => setCopied(false), 1800);
   };
 
+  const selectFunction = (item: (typeof functions)[number]) => {
+    setCategory(item.category);
+    setFunctionName(item.name);
+    setSearchQuery("");
+    setIsFunctionMenuOpen(false);
+  };
+
   return (
     <main>
       <header className="hero">
-        <div className="brand"><span className="mark">⌁</span><span>dogu</span><span className="badge">playground</span></div>
-        <div className="hero-copy">
-          <h1>함수를 빠르게 확인하세요</h1>
-          <p className="intro">인수를 입력하고 실행 결과를 바로 확인할 수 있습니다.</p>
+        <div className="brand"><span className="mark">⌁</span><span>dogu</span></div>
+        <div className="global-search">
+          <div className="global-search-input">
+            <span aria-hidden="true">⌕</span>
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="함수명 또는 설명으로 검색"
+              aria-label="함수명 또는 설명으로 검색"
+            />
+            {searchQuery && <button type="button" onClick={() => setSearchQuery("")} aria-label="검색어 지우기">×</button>}
+          </div>
+          {searchQuery && (
+            <div className="global-search-results" aria-live="polite">
+              {searchResults.length ? searchResults.map((item) => (
+                <button type="button" key={item.name} onClick={() => selectFunction(item)}>
+                  <span><b>{item.name}</b><small>{item.description}</small></span><em>{item.category}</em>
+                </button>
+              )) : <p>일치하는 함수가 없습니다.</p>}
+            </div>
+          )}
         </div>
-        <div className="status">v0.1.0</div>
       </header>
 
       <section className="workspace">
@@ -113,11 +146,12 @@ export function App() {
                         type="button"
                         role="option"
                         aria-selected={item.name === selected.name}
-                        className={item.name === selected.name ? "selected" : ""}
+                        className={`function-option ${item.name === selected.name ? "selected" : ""}`}
                         key={item.name}
-                        onClick={() => { setFunctionName(item.name); setIsFunctionMenuOpen(false); }}
+                        onClick={() => selectFunction(item)}
                       >
-                        <span className="check">✓</span>{item.name}
+                        <span className="check">✓</span>
+                        <span className="function-option-copy"><b>{item.name}</b><small>{item.description}</small></span>
                       </button>
                     ))}
                   </div>
