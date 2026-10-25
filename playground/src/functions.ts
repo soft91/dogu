@@ -139,7 +139,7 @@ const references: Record<string, FunctionReference> = {
 			parameter(
 				"array",
 				"readonly (T | null | undefined | false | 0 | '')[]",
-				"falsy 값을 제거할 배열입니다.",
+				"false 값을 제거할 배열입니다.",
 			),
 		],
 		returnType: "T[]",
@@ -576,7 +576,7 @@ export const functions: PlaygroundFunction[] = [
 	entry(
 		"Array",
 		"compact",
-		"배열에서 falsy 값 제거",
+		"배열에서 false 및 빈 값 제거",
 		[[0, 1, false, 2, "", 3, null]],
 		compact,
 	),
